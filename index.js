@@ -1,13 +1,12 @@
 var express = require('express');
-var app = express();
 var cors = require('cors');
-
+var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/ForumApp');
 
+const port = 1515;
 
+var app = express();
 
-var bodyParser = require('body-parser')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,6 +25,8 @@ var corsOptions = {
 app.use(cors(corsOptions));
 
 
+
+mongoose.connect('mongodb://localhost:27017/ForumApp');
 var commentSchema = mongoose.Schema({
     user: String,
     comment: String
@@ -50,7 +51,7 @@ app.post('/addcomment', function(req,res){
         .then( () => {
             res.send("comment saved to database");
         }).catch( () => {
-        res.status(400).send("unable to save to database");
+            res.status(400).send("unable to save to database");
         });
     }
 });
@@ -59,4 +60,6 @@ app.get('/', function(req, res) {
     res.send("express server")
 });
 
-app.listen(5000);
+app.listen(port, () => {
+    console.log('app listening on port ',port);
+});
