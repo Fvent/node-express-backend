@@ -68,15 +68,27 @@ app.post('/addcomment', function(req,res){
 });
 
 app.post('/login',function(req,res){
+    console.log(User);
+
     var requestedUser = new User(req.body);
 
     if(!requestedUser.name || !requestedUser.password){
-        res.status(404).send("user not found");
-    }else{
-        User.find({name: requestedUser.name, password: requestedUser.password}, function(err,response){
-            console.log(response);
-            res.send(response);
-        });
+        res.status(404).send("no valid input");
+    }
+    else{
+        User.find({name: requestedUser.name, password: requestedUser.password},
+            (err, response) => {
+                try{
+                    if(response.length<1){
+                        res.send('user not in db')
+                    }else{
+                        res.send(response);
+                    }
+                }catch(err){
+                    console.log('Error occured: \n'+err);
+                }
+                
+            });
     }
 });
 
