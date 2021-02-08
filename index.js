@@ -11,7 +11,7 @@ var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// var whitelist = ['http://localhost:3000'];
+// var whitelist = ['http://localhost:3000', ];
 
 // var corsOptions = {
 //     origin: function (origin, callback) {
@@ -23,18 +23,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //     }
 // }
 
-// app.use(cors(corsOptions));
+var corsOptions = {
+    origin: '*'
+};
+
+app.use(cors(corsOptions));
 
 
 mongoose.connect('mongodb://localhost:27017/ForumApp', {useNewUrlParser: true})
         .catch(error => {console.log(error)});
 
-var commentSchema = new mongoose.Schema({
+var commentSchema = mongoose.Schema({
     user: String,
     comment: String
 });
 
-var Comment = mongoose.model("comments", commentSchema);
+var Comment = mongoose.model("Comment", commentSchema);
 
 var userSchema = new mongoose.Schema({
     name: String,
@@ -42,12 +46,17 @@ var userSchema = new mongoose.Schema({
     password: String
 });
 
-var User = mongoose.model('users', userSchema);
+var User = mongoose.model('User', userSchema);
 
 
 app.get('/viewcomments', function(req,res){
     Comment.find(function(err,response){
-        res.json(response);
+        if(err){
+            console.log(err);
+            res.send("Error on server");
+        }else{
+            res.send(response);
+        }
     })
 });
 
@@ -56,13 +65,13 @@ app.post('/addcomment', function(req,res){
     var newComment = new Comment(req.body);
 
     if(!newComment.user || !newComment.comment){
-        res.render("show_message", {message: "not valid info", type:"error"} )
+        res.send({message: "need valid input"});
     }else{
         newComment.save()
         .then( () => {
             res.send("comment saved to database");
         }).catch( () => {
-            res.status(400).send("unable to save to database");
+            res.send("unable to save to database");
         });
     }
 });
@@ -73,7 +82,7 @@ app.post('/login',function(req,res){
     var requestedUser = new User(req.body);
 
     if(!requestedUser.name || !requestedUser.password){
-        res.status(404).send("no valid input");
+        res.send("no valid input");
     }
     else{
         User.find({name: requestedUser.name, password: requestedUser.password},
@@ -87,7 +96,6 @@ app.post('/login',function(req,res){
                 }catch(err){
                     console.log('Error occured: \n'+err);
                 }
-                
             });
     }
 });
