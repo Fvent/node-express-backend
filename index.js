@@ -4,14 +4,14 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 
-const port = 1515;
+const PORT = 1515;
 
 var app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// var whitelist = ['http://localhost:3000', ];
+// var whitelist = ['http://localhost:3000'];
 
 // var corsOptions = {
 //     origin: function (origin, callback) {
@@ -23,14 +23,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //     }
 // }
 
-var corsOptions = {
-    origin: '*'
-};
+// var corsOptions = {
+//     origin: 'http://localhost:3000'
+// };
 
+var corsOptions = {
+    origin: '*',
+    methods: 'GET,POST'
+}
 app.use(cors(corsOptions));
 
-
-mongoose.connect('mongodb://localhost:27017/ForumApp', {useNewUrlParser: true})
+mongoose.connect('mongodb://localhost:27017/ForumApp', {useNewUrlParser: true, useUnifiedTopology: true})
         .catch(error => {console.log(error)});
 
 var commentSchema = mongoose.Schema({
@@ -48,6 +51,9 @@ var userSchema = new mongoose.Schema({
 
 var User = mongoose.model('User', userSchema);
 
+app.get('/', function(req, res) {
+    res.send("express server")
+});
 
 app.get('/viewcomments', function(req,res){
     Comment.find(function(err,response){
@@ -77,33 +83,19 @@ app.post('/addcomment', function(req,res){
 });
 
 app.post('/login',function(req,res){
-    console.log(User);
-
-    var requestedUser = new User(req.body);
-
-    if(!requestedUser.name || !requestedUser.password){
-        res.send("no valid input");
-    }
-    else{
-        User.find({name: requestedUser.name, password: requestedUser.password},
-            (err, response) => {
-                try{
-                    if(response.length<1){
-                        res.send('user not in db')
-                    }else{
-                        res.send(response);
-                    }
-                }catch(err){
-                    console.log('Error occured: \n'+err);
-                }
-            });
-    }
+    var requestedUser = req.body;
+    console.log(requestedUser);
+    User.find({name: requestedUser.name, password: requestedUser.password}, 
+        (err, response) => {
+            if(err){
+                console.log(err);
+                res.send('error on server');
+            }else{
+                res.send(response);
+            }
+        });
 });
 
-app.get('/', function(req, res) {
-    res.send("express server")
-});
-
-app.listen(port, () => {
-    console.log('app listening on port ',port);
+app.listen(PORT, () => {
+    console.log('app listening on port ', PORT);
 });
