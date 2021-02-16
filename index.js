@@ -85,15 +85,26 @@ app.post('/addcomment', function(req,res){
 app.post('/login',function(req,res){
     var requestedUser = req.body;
     console.log(requestedUser);
-    User.find({name: requestedUser.name, password: requestedUser.password}, 
-        (err, response) => {
-            if(err){
-                console.log(err);
-                res.send('error on server');
-            }else{
-                res.send(response);
-            }
-        });
+    // User.find({name: requestedUser.name, password: requestedUser.password}, 
+    //     (err, response) => {
+    //         if(err){
+    //             console.log(err);
+    //             res.send('error on server');
+    //         }else{
+    //             console.log(response);
+    //             res.send({name: response.name, alias: response.alias});
+    //         }
+    //     });
+    User.find({'name': requestedUser.name, 'password': requestedUser.password}).select('name alias').exec((err ,response) => {
+        try{
+            console.log(response);
+            res.send(response);
+        }catch(err){
+            res.send('error occured');
+        }
+    });
+    
+   
 });
 
 app.listen(PORT, () => {
