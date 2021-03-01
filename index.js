@@ -90,16 +90,19 @@ app.post('/addcomment', function(req,res){
 
 app.post('/adduser', (req,res) => {
     var userData = req.body;
+    console.log(userData);
     var newUser = new User({
         name: userData.name,
         alias: userData.alias,
         password: privateKey.decrypt(userData.password)
     });
-    newUser.save().then(res.send('ok'));
+    newUser.save().then( () => {res.send('user added to db')}).catch( () => {res.send('user not added to db')});
 });
 
 app.post('/login',function(req,res){
-    var requestedUser = req.body;
+    // var requestedUser = req.body;
+    var requestedUser = {'name': req.body.name, 'password': privateKey.decrypt(req.body.password)}
+
     console.log(requestedUser);
     
     User.find({'name': requestedUser.name, 'password': requestedUser.password}).select('name alias').exec((err ,response) => {
